@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ストレス耐性診断 | あなたは何の素材でできている?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14171a;
+    --panel: #1b1f23;
+    --panel-alt: #21262b;
+    --border: #2e353b;
+    --text: #edeff0;
+    --text-muted: #8e97a0;
+    --accent: #e8a33d;
+    --accent-soft: rgba(232,163,61,.15);
+
+    --diamond: #8fe9e3;
+    --steel:   #9fb0be;
+    --glass:   #bfe3f2;
+    --plastic: #f2c14e;
+    --rubber:  #e4572e;
+    --paper:   #d8cbaa;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:48px 20px 80px;
+    line-height:1.6;
+  }
+  @media (max-width:600px){
+    body{padding:28px 14px 60px;}
+  }
+
+  #app{
+    width:100%;
+    max-width:640px;
+  }
+
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    letter-spacing:.18em;
+    color:var(--accent);
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+
+  h1,h2,h3{
+    font-family:'Space Grotesk',sans-serif;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+
+  /* ---------- screens ---------- */
+  .screen{ display:none; }
+  .screen.active{ display:block; animation:fadeUp .5s ease both; }
+  @keyframes fadeUp{
+    from{opacity:0; transform:translateY(10px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  /* ---------- start screen ---------- */
+  .screen-start h1{
+    font-size:clamp(28px,5vw,40px);
+    line-height:1.25;
+    margin-bottom:18px;
+  }
+  .screen-start .lead{
+    color:var(--text-muted);
+    font-size:15px;
+    max-width:46ch;
+    margin-bottom:32px;
+  }
+  .material-preview{
+    display:flex;
+    gap:8px;
+    margin-bottom:36px;
+    flex-wrap:wrap;
+  }
+  .chip{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.04em;
+    padding:6px 10px;
+    border-radius:100px;
+    border:1px solid var(--border);
+    color:var(--text-muted);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .chip .dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+
+  button{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    border:none;
+    border-radius:10px;
+  }
+  .btn-primary{
+    background:var(--accent);
+    color:#1a1305;
+    padding:15px 28px;
+    transition:transform .15s ease, box-shadow .15s ease;
+    box-shadow:0 0 0 0 rgba(232,163,61,0);
+  }
+  .btn-primary:hover{
+    transform:translateY(-1px);
+    box-shadow:0 6px 20px rgba(232,163,61,.25);
+  }
+  .btn-primary:focus-visible{
+    outline:2px solid var(--text);
+    outline-offset:3px;
+  }
+
+  /* ---------- quiz screen ---------- */
+  .quiz-head{margin-bottom:28px;}
+  .test-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    letter-spacing:.12em;
+    color:var(--text-muted);
+    margin-bottom:10px;
+    display:flex;
+    justify-content:space-between;
+  }
+  .gauge{
+    height:6px;
+    width:100%;
+    background:var(--panel-alt);
+    border-radius:100px;
+    overflow:hidden;
+    border:1px solid var(--border);
+  }
+  .gauge-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, var(--accent), #f4c874);
+    transition:width .45s cubic-bezier(.4,0,.2,1);
+  }
+  .q-prompt{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:clamp(15px,3vw,17px);
+    font-weight:600;
+    color:var(--accent);
+    margin-bottom:8px;
+  }
+  #qText{
+    font-size:clamp(18px,3.4vw,22px);
+    margin-bottom:24px;
+    line-height:1.55;
+    color:var(--text-muted);
+  }
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .option{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px 18px;
+    text-align:left;
+    color:var(--text);
+    font-size:14.5px;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    transition:border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+  .option:hover{
+    border-color:var(--accent);
+    background:var(--panel-alt);
+  }
+  .option:active{ transform:scale(.995); }
+  .option:focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:2px;
+  }
+  .option .letter{
+    font-family:'JetBrains Mono',monospace;
+    color:var(--accent);
+    font-weight:600;
+    flex-shrink:0;
+  }
+
+  /* ---------- result screen ---------- */
+  .result-frame{
+    background:#101315;
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:16px;
+    margin-bottom:20px;
+  }
+  .result-swatch{
+    position:relative;
+    width:100%;
+    height:160px;
+    border-radius:12px;
+    overflow:hidden;
+    border:1px solid var(--border);
+  }
+  .result-panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:28px;
+  }
+  @media (max-width:520px){
+    .result-panel{ padding:22px 18px; }
+  }
+  .swatch-texture{
+    position:absolute;
+    inset:0;
+  }
+  .swatch-sweep{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(115deg, transparent 30%, rgba(255,255,255,.55) 48%, transparent 66%);
+    transform:translateX(-120%);
+    mix-blend-mode:overlay;
+  }
+  .result-swatch.sweep .swatch-sweep{
+    animation:sweep 1.4s ease-out .25s 1;
+  }
+  @keyframes sweep{
+    to{ transform:translateX(120%); }
+  }
+
+  .result-name{
+    font-size:clamp(30px,6vw,42px);
+    margin-bottom:6px;
+  }
+  .result-tagline{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    color:var(--text-muted);
+    margin-bottom:20px;
+    letter-spacing:.02em;
+  }
+  .result-desc{
+    font-size:15px;
+    color:var(--text);
+    margin-bottom:28px;
+  }
+
+  .props{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px 24px;
+    margin-bottom:32px;
+  }
+  .prop{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .prop-label{
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    color:var(--text-muted);
+    font-family:'JetBrains Mono',monospace;
+  }
+  .prop-track{
+    height:5px;
+    background:var(--panel-alt);
+    border-radius:100px;
+    overflow:hidden;
+    border:1px solid var(--border);
+  }
+  .prop-fill{
+    height:100%;
+    width:0%;
+    border-radius:100px;
+    transition:width 1s cubic-bezier(.4,0,.2,1) .3s;
+  }
+
+  .cols{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+    margin-bottom:28px;
+  }
+  @media (max-width:520px){
+    .cols{grid-template-columns:1fr;}
+    .props{grid-template-columns:1fr;}
+  }
+  .cols h3{
+    font-size:13px;
+    color:var(--text-muted);
+    font-weight:600;
+    margin-bottom:10px;
+    font-family:'Inter',sans-serif;
+  }
+  .cols ul{
+    margin:0;
+    padding-left:18px;
+    font-size:13.5px;
+    color:var(--text);
+  }
+  .cols li{margin-bottom:6px;}
+
+  .result-tip{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-left:3px solid var(--accent);
+    padding:14px 16px;
+    border-radius:8px;
+    font-size:13.5px;
+    color:var(--text-muted);
+    margin-bottom:30px;
+  }
+  .result-tip strong{ color:var(--text); }
+
+  .btn-outline{
+    background:transparent;
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:13px 22px;
+  }
+  .btn-outline:hover{ border-color:var(--text-muted); }
+
+  /* ---------- material textures ---------- */
+  [data-material="diamond"] .swatch-texture{
+    background:
+      repeating-conic-gradient(from 20deg at 30% 40%,
+        #a9f3ee 0deg 14deg, #6fd2cb 14deg 28deg, #c9fbf7 28deg 40deg, #85e3dd 40deg 55deg);
+    background-color:var(--diamond);
+  }
+  [data-material="steel"] .swatch-texture{
+    background:
+      repeating-linear-gradient(100deg,
+        #c3ccd3 0px 2px, #8b99a5 2px 4px, #aab6c0 4px 7px);
+    background-color:var(--steel);
+  }
+  [data-material="glass"] .swatch-texture{
+    background:
+      linear-gradient(160deg, rgba(255,255,255,.5), rgba(255,255,255,0) 40%),
+      repeating-linear-gradient(35deg, rgba(255,255,255,.35) 0 1px, transparent 1px 60px),
+      repeating-linear-gradient(-50deg, rgba(255,255,255,.25) 0 1px, transparent 1px 90px);
+    background-color:var(--glass);
+  }
+  [data-material="plastic"] .swatch-texture{
+    background:
+      radial-gradient(circle at 32% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 42%),
+      radial-gradient(circle at 70% 80%, rgba(0,0,0,.08), transparent 50%);
+    background-color:var(--plastic);
+  }
+  [data-material="rubber"] .swatch-texture{
+    background:
+      radial-gradient(circle, rgba(0,0,0,.18) 1.5px, transparent 1.6px);
+    background-size:14px 14px;
+    background-color:var(--rubber);
+  }
+  [data-material="paper"] .swatch-texture{
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.05) 0 1px, transparent 1px 5px),
+      linear-gradient(100deg, rgba(255,255,255,.15), transparent 40%);
+    background-color:var(--paper);
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- START -->
+  <div class="screen screen-start active">
+    <div class="eyebrow">STRESS RESISTANCE LAB</div>
+    <h1>あなたの心は、<br>何の素材でできている?</h1>
+    <p class="lead">全8問。プレッシャー・批判・失敗・回復の場面での反応から、あなたのストレス耐性を素材の物性にたとえて診断します。</p>
+    <div class="material-preview">
+      <span class="chip"><span class="dot" style="background:var(--diamond)"></span>ダイヤモンド</span>
+      <span class="chip"><span class="dot" style="background:var(--steel)"></span>鋼鉄</span>
+      <span class="chip"><span class="dot" style="background:var(--glass)"></span>ガラス</span>
+      <span class="chip"><span class="dot" style="background:var(--plastic)"></span>プラスチック</span>
+      <span class="chip"><span class="dot" style="background:var(--rubber)"></span>ゴム</span>
+      <span class="chip"><span class="dot" style="background:var(--paper)"></span>紙</span>
+    </div>
+    <button class="btn-primary" id="startBtn">検査をはじめる</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="screen screen-quiz">
+    <div class="quiz-head">
+      <div class="test-label"><span>TEST <span id="qNum">01</span> / 08</span><span id="qHint">負荷試験</span></div>
+      <div class="gauge"><div class="gauge-fill" id="gaugeFill"></div></div>
+    </div>
+    <div class="q-prompt" id="qPrompt"></div>
+    <h2 id="qText"></h2>
+    <div class="options" id="options"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen screen-result">
+    <div class="result-frame">
+      <div class="result-swatch" id="resultSwatch">
+        <div class="swatch-texture"></div>
+        <div class="swatch-sweep"></div>
+      </div>
+    </div>
+
+    <div class="result-panel">
+      <div class="eyebrow">YOUR MATERIAL TYPE</div>
+      <h1 class="result-name" id="resultName"></h1>
+      <div class="result-tagline" id="resultTagline"></div>
+      <p class="result-desc" id="resultDesc"></p>
+
+      <div class="props" id="resultProps"></div>
+
+      <div class="cols">
+        <div>
+          <h3>強み</h3>
+          <ul id="resultStrengths"></ul>
+        </div>
+        <div>
+          <h3>弱み・リスク</h3>
+          <ul id="resultWeaknesses"></ul>
+        </div>
+      </div>
+
+      <div class="result-tip" id="resultTip"></div>
+
+      <button class="btn-outline" id="retryBtn">もう一度診断する</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+
+  const materials = {
+    diamond: {
+      name: "ダイヤモンド型",
+      tagline: "何ものにも動じない、圧倒的な硬さ",
+      color: "var(--diamond)",
+      desc: "多少の圧力ではまったくひるまない硬さを持つタイプ。感情をあまり表に出さず、淡々と物事に対処する胆力があります。",
+      strengths: [
+        "高いプレッシャー下でも安定したパフォーマンスを出せる",
+        "周囲から「動じない人」として信頼される"
+      ],
+      weaknesses: [
+        "想定外の一撃(急所を突かれる出来事)には脆く、一気に砕けることがある",
+        "無理を溜め込みやすく、弱音やSOSを出すのが苦手"
+      ],
+      tip: "たまには硬さを緩めて、小さな弱音を早めに周囲にこぼす練習をしてみましょう。",
+      props: { hardness:10, toughness:3, elasticity:1, brittleness:8 }
+    },
+    steel: {
+      name: "鋼鉄型",
+      tagline: "叩かれるほど強くなる、粘りの靭性",
+      color: "var(--steel)",
+      desc: "一度や二度の強い衝撃には粘り強く耐え、しなやかに受け流す靭性を持つタイプ。逆境に強く、踏ん張りが効きます。",
+      strengths: [
+        "逆境に強く、最後までやり切る粘り強さがある",
+        "多少の妥協(変形)をしても折れずに持ちこたえられる"
+      ],
+      weaknesses: [
+        "慢性的な繰り返しストレスに「疲労」を起こしやすい",
+        "限界のサインに気づきにくく、ある日突然折れることがある"
+      ],
+      tip: "定期的なメンテナンス(休息)を、あらかじめスケジュールに組み込んでおきましょう。",
+      props: { hardness:8, toughness:9, elasticity:4, brittleness:3 }
+    },
+    glass: {
+      name: "ガラス型",
+      tagline: "美しく安定して見えて、実は繊細",
+      color: "var(--glass)",
+      desc: "表面はクリアで安定して見えますが、内部に見えない小さな傷が蓄積しやすいタイプ。繊細な感受性の持ち主です。",
+      strengths: [
+        "普段は落ち着いた、洗練された印象を保てる",
+        "繊細な感受性で物事を深く捉え、丁寧に扱える"
+      ],
+      weaknesses: [
+        "傷が一定量を超えると、前触れなく破損(バーンアウト)しやすい",
+        "無理を隠すのが得意な分、周囲が異変に気づきにくい"
+      ],
+      tip: "小さな違和感を感じた段階で、早めに相談や休養というメンテナンスをとりましょう。",
+      props: { hardness:9, toughness:1, elasticity:1, brittleness:10 }
+    },
+    plastic: {
+      name: "プラスチック型",
+      tagline: "形を変えて、しなやかに適応する",
+      color: "var(--plastic)",
+      desc: "環境や状況に応じて自分の形を柔軟に変えられる、適応力の高いタイプ。変化そのものをあまり恐れません。",
+      strengths: [
+        "変化への適応力が高く、新しい環境や役割にもすぐ馴染める",
+        "失敗や指摘を糧にして、やり方を作り変えられる"
+      ],
+      weaknesses: [
+        "変形させすぎると、元の形(本来の自分)に戻れなくなることがある",
+        "周りに合わせて自分を犠牲にしすぎる傾向"
+      ],
+      tip: "「ここだけは変えない」という自分の芯を、あらかじめ一つ持っておきましょう。",
+      props: { hardness:4, toughness:6, elasticity:5, brittleness:3 }
+    },
+    rubber: {
+      name: "ゴム型",
+      tagline: "跳ね返す、圧倒的な回復力",
+      color: "var(--rubber)",
+      desc: "衝撃を受けてもすぐに元の形に戻る、高い弾性と回復力を持つタイプ。落ち込んでも切り替えが早いのが特徴です。",
+      strengths: [
+        "落ち込んでも立ち直りが早く、引きずりにくい",
+        "ストレスを次のエネルギーに変換する力がある"
+      ],
+      weaknesses: [
+        "回復が早い分、根本原因への対処を先送りしがち",
+        "無自覚のうちに負荷を溜め込んでしまうことがある"
+      ],
+      tip: "跳ね返す前に、一度だけ立ち止まって「何が原因だったか」を見つめてみましょう。",
+      props: { hardness:2, toughness:7, elasticity:10, brittleness:1 }
+    },
+    paper: {
+      name: "紙型",
+      tagline: "繊細だからこそ、あらゆる形になれる",
+      color: "var(--paper)",
+      desc: "一つ一つの負荷を受け止めやすく繊細ですが、その柔らかさゆえに多様な形に自分を折り畳める、多才なタイプです。",
+      strengths: [
+        "繊細な感受性を持ち、状況を細やかに読み取れる",
+        "様々な状況に応じて、自分を柔軟に作り変えられる創造性"
+      ],
+      weaknesses: [
+        "受けたダメージが折り目や傷として残りやすい",
+        "急な強い負荷には弱く、破れやすい"
+      ],
+      tip: "折り目(ダメージ)が増えすぎる前に、こまめに広げて休ませる時間をつくりましょう。",
+      props: { hardness:1, toughness:2, elasticity:2, brittleness:6 }
+    }
+  };
+
+  const priorityOnTie = ["diamond","steel","glass","rubber","plastic","paper"];
+
+  const questions = [
+    {
+      hint:"負荷試験",
+      prompt:"あなたなら、こんな時どう動く?",
+      text:"締め切り直前に、想定外のトラブルが発生した。",
+      options:[
+        {label:"表面上は全く動じず、淡々と対処法を組み立てる", score:{diamond:2, steel:1}},
+        {label:"「またか」とため息をつきつつも、粘り強く一つずつ潰していく", score:{steel:2, rubber:1}},
+        {label:"一瞬頭が真っ白になるが、なんとか形を変えて対応策を捻り出す", score:{plastic:2, paper:1}},
+        {label:"動揺を隠せず、誰かに助けを求めてしまう", score:{paper:2, rubber:1}}
+      ]
+    },
+    {
+      hint:"衝撃試験",
+      prompt:"あなたは、それをどう受け止める?",
+      text:"手厳しい指摘や批判を受けた。",
+      options:[
+        {label:"表面上は堂々と受け止めるが、内心は深く傷つき、なかなか消えない", score:{glass:2, diamond:1}},
+        {label:"一旦へこむが、寝れば案外ケロッと立ち直る", score:{rubber:2, plastic:1}},
+        {label:"指摘を糧にして、自分のやり方そのものを作り変える", score:{plastic:2, paper:1}},
+        {label:"顔には出さず、淡々と受け流して黙々と改善を続ける", score:{steel:2, diamond:1}}
+      ]
+    },
+    {
+      hint:"圧力試験",
+      prompt:"あなたに近いのは、どっち?",
+      text:"大勢の前でのプレゼンや試験など、大きなプレッシャーの場面。",
+      options:[
+        {label:"極度の集中状態に入り、むしろ力を発揮する", score:{diamond:2, steel:1}},
+        {label:"手足が震えるが、なんとか声を絞り出して乗り切る", score:{paper:2, glass:1}},
+        {label:"緊張はするが、「いつも通りでいい」と開き直る", score:{rubber:2, plastic:1}},
+        {label:"入念な準備でカバーし、粘り強く最後までやりきる", score:{steel:2, rubber:1}}
+      ]
+    },
+    {
+      hint:"変形試験",
+      prompt:"あなたなら、どう対応する?",
+      text:"予定やルールが急に変更された。",
+      options:[
+        {label:"内心イラッとするが顔には出さず、淡々と新ルールに従う", score:{diamond:2, steel:1}},
+        {label:"「まあ仕方ない」とすぐに気持ちを切り替え、新しい状況に馴染む", score:{plastic:2, rubber:1}},
+        {label:"一瞬戸惑うが、その分いろんなやり方を試して対応する", score:{paper:2, plastic:1}},
+        {label:"かなり動揺し、しばらく気持ちの整理に時間がかかる", score:{glass:2, paper:1}}
+      ]
+    },
+    {
+      hint:"回復試験",
+      prompt:"あなたは、翌日をどう過ごす?",
+      text:"大きな失敗をしてしまった。",
+      options:[
+        {label:"表面上はいつも通りに振る舞うが、心の奥に小さな傷として残り続ける", score:{glass:2, diamond:1}},
+        {label:"しっかり反省しつつも、意外と早く元のペースに戻る", score:{rubber:2, steel:1}},
+        {label:"失敗を機に、やり方や考え方をガラッと変えてみる", score:{plastic:2, paper:1}},
+        {label:"かなり引きずり、何度も同じことを思い返してしまう", score:{paper:2, glass:1}}
+      ]
+    },
+    {
+      hint:"摩耗試験",
+      prompt:"あなたは、どう乗り越える?",
+      text:"人間関係での衝突やすれ違いがあった。",
+      options:[
+        {label:"表面上は特に態度を変えず、淡々と距離だけをとる", score:{diamond:2, steel:1}},
+        {label:"一度は落ち込むが、話せば案外すぐ元通りの関係に戻れる", score:{rubber:2, plastic:1}},
+        {label:"相手や状況に合わせて、自分の接し方を柔軟に変える", score:{plastic:2, paper:1}},
+        {label:"かなり気にしてしまい、繰り返し悩んでしまう", score:{paper:2, glass:1}}
+      ]
+    },
+    {
+      hint:"限界試験",
+      prompt:"あなたなら、最後にどうなる?",
+      text:"自分の限界を超えるほど、負荷がかかり続けたら。",
+      options:[
+        {label:"普段通り耐え続け、ある日前触れなくパタッと動けなくなる", score:{glass:2, diamond:1}},
+        {label:"じわじわ疲弊していき、気づいた時には粘りがなくなっている", score:{steel:2, glass:1}},
+        {label:"我慢の限界で、それまでとは違う形に自分を変えて凌ぐ", score:{plastic:2, paper:1}},
+        {label:"早めに「もう無理」のサインを出し、周りに助けを求める", score:{paper:2, rubber:1}}
+      ]
+    },
+    {
+      hint:"復元試験",
+      prompt:"あなたに近いのは、どのタイプ?",
+      text:"ストレスから回復する時。",
+      options:[
+        {label:"一人になって、じっくり心を静める時間が必要", score:{diamond:2, glass:1}},
+        {label:"パッと気持ちを切り替えて、すぐ元の調子に戻る", score:{rubber:2, plastic:1}},
+        {label:"環境や考え方を変えることで、新しい自分にアップデートする", score:{plastic:2, paper:1}},
+        {label:"誰かに話を聞いてもらうことで、少しずつ回復する", score:{paper:2, rubber:1}}
+      ]
+    }
+  ];
+
+  const state = { index:0, scores:{diamond:0,steel:0,glass:0,plastic:0,rubber:0,paper:0} };
+
+  const el = {
+    start: document.querySelector(".screen-start"),
+    quiz: document.querySelector(".screen-quiz"),
+    result: document.querySelector(".screen-result"),
+    qNum: document.getElementById("qNum"),
+    qHint: document.getElementById("qHint"),
+    qPrompt: document.getElementById("qPrompt"),
+    qText: document.getElementById("qText"),
+    options: document.getElementById("options"),
+    gaugeFill: document.getElementById("gaugeFill"),
+    resultSwatch: document.getElementById("resultSwatch"),
+    resultName: document.getElementById("resultName"),
+    resultTagline: document.getElementById("resultTagline"),
+    resultDesc: document.getElementById("resultDesc"),
+    resultProps: document.getElementById("resultProps"),
+    resultStrengths: document.getElementById("resultStrengths"),
+    resultWeaknesses: document.getElementById("resultWeaknesses"),
+    resultTip: document.getElementById("resultTip")
+  };
+
+  const propLabels = {
+    hardness: "硬度 Hardness",
+    toughness: "靭性 Toughness",
+    elasticity: "弾性 Elasticity",
+    brittleness: "脆性 Brittleness"
+  };
+
+  function showScreen(target){
+    [el.start, el.quiz, el.result].forEach(s => s.classList.remove("active"));
+    target.classList.add("active");
+  }
+
+  function renderQuestion(){
+    const q = questions[state.index];
+    el.qNum.textContent = String(state.index+1).padStart(2,"0");
+    el.qHint.textContent = q.hint;
+    el.qPrompt.textContent = q.prompt;
+    el.qText.textContent = q.text;
+    el.gaugeFill.style.width = (state.index/questions.length*100) + "%";
+    el.options.innerHTML = "";
+    const letters = ["A","B","C","D"];
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement("button");
+      btn.className = "option";
+      btn.innerHTML = `<span class="letter">${letters[i]}</span><span>${opt.label}</span>`;
+      btn.addEventListener("click", () => selectOption(opt));
+      el.options.appendChild(btn);
+    });
+  }
+
+  function selectOption(opt){
+    Object.keys(opt.score).forEach(k => { state.scores[k] += opt.score[k]; });
+    state.index++;
+    if(state.index >= questions.length){
+      el.gaugeFill.style.width = "100%";
+      setTimeout(renderResult, 250);
+    } else {
+      renderQuestion();
+    }
+  }
+
+  function pickMaterial(){
+    let best = null, bestScore = -Infinity;
+    priorityOnTie.forEach(key => {
+      const s = state.scores[key];
+      if(s > bestScore){ bestScore = s; best = key; }
+    });
+    return best;
+  }
+
+  function renderResult(){
+    const key = pickMaterial();
+    const m = materials[key];
+
+    el.resultSwatch.setAttribute("data-material", key);
+    el.resultSwatch.classList.remove("sweep");
+    void el.resultSwatch.offsetWidth; // restart animation
+    el.resultSwatch.classList.add("sweep");
+
+    el.resultName.textContent = m.name;
+    el.resultTagline.textContent = m.tagline;
+    el.resultDesc.textContent = m.desc;
+
+    el.resultProps.innerHTML = "";
+    Object.keys(m.props).forEach(propKey => {
+      const val = m.props[propKey];
+      const wrap = document.createElement("div");
+      wrap.className = "prop";
+      wrap.innerHTML = `
+        <div class="prop-label"><span>${propLabels[propKey]}</span><span>${val}/10</span></div>
+        <div class="prop-track"><div class="prop-fill" style="background:${m.color}"></div></div>
+      `;
+      el.resultProps.appendChild(wrap);
+      requestAnimationFrame(() => {
+        wrap.querySelector(".prop-fill").style.width = (val*10) + "%";
+      });
+    });
+
+    el.resultStrengths.innerHTML = m.strengths.map(s => `<li>${s}</li>`).join("");
+    el.resultWeaknesses.innerHTML = m.weaknesses.map(s => `<li>${s}</li>`).join("");
+    el.resultTip.innerHTML = `<strong>ヒント:</strong> ${m.tip}`;
+
+    showScreen(el.result);
+  }
+
+  document.getElementById("startBtn").addEventListener("click", () => {
+    state.index = 0;
+    state.scores = {diamond:0,steel:0,glass:0,plastic:0,rubber:0,paper:0};
+    renderQuestion();
+    showScreen(el.quiz);
+  });
+
+  document.getElementById("retryBtn").addEventListener("click", () => {
+    state.index = 0;
+    state.scores = {diamond:0,steel:0,glass:0,plastic:0,rubber:0,paper:0};
+    renderQuestion();
+    showScreen(el.quiz);
+  });
+
+})();
+</script>
+
+</body>
+</html>
